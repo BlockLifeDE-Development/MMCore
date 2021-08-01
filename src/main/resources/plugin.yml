@@ -1,0 +1,8 @@
+name: MMCore
+version: ${project.version}
+main: com.gestankbratwurst.core.mmcore.MMCore
+api-version: 1.17
+authors: [Gestankbratwurst]
+description: Core plugin für moderne Minecraft Server
+depend:
+  - ProtocolLib
