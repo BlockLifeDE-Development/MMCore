@@ -12,9 +12,9 @@ import org.bukkit.entity.Player;
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
  *
- * This file is part of avarioncore and was created at the 23.03.2020
+ * This file is part of MMCore and was created at the 28.07.2021
  *
- * LaLaLand-CorePlugin can not be copied and/or distributed without the express
+ * MMCore can not be copied and/or distributed without the express
  * permission of the owner.
  *
  */
@@ -31,13 +31,8 @@ public class ActionBarManager {
       this.init(player);
     }
     Bukkit.getPluginManager().registerEvents(new ActionBarListener(this), plugin);
-    // TODO enable again for auto updates
-    /*
-        this.taskManager
-        .runRepeatedBukkit(new ActionBarUpdateThread(this), 0L,
-            ActionBarUpdateThread.UPDATE_PERIOD);
-     */
 
+    this.taskManager.runRepeatedBukkit(new ActionBarUpdateRunnable(this), 0L, ActionBarUpdateRunnable.UPDATE_PERIOD);
   }
 
   public ActionBarBoard getBoard(final UUID playerID) {
@@ -49,7 +44,7 @@ public class ActionBarManager {
   }
 
   protected void init(final Player player) {
-    this.boardMap.put(player.getUniqueId(), new ActionBarBoard(player.getUniqueId(), this));
+    this.boardMap.put(player.getUniqueId(), new ActionBarBoard(this));
   }
 
   protected void terminate(final Player player) {

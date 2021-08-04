@@ -11,21 +11,12 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-/*******************************************************
- * Copyright (C) Gestankbratwurst suotokka@gmail.com
- *
- * This file is part of MMCore and was created at the 28.07.2021
- *
- * MMCore can not be copied and/or distributed without the express
- * permission of the owner.
- *
- */
 public abstract class AbstractGUIInventory implements IInventoryHandler {
 
   private final Int2ObjectMap<GUIItem> buttonMap = new Int2ObjectOpenHashMap<>();
 
   protected void update(final Player player) {
-    final Inventory inventory = player.getInventory();
+    final Inventory inventory = player.getOpenInventory().getTopInventory();
     GUIManager.getInstance().getOptionalHandlerOf(inventory).ifPresent(handler -> this.prepareInventory(player, inventory));
   }
 

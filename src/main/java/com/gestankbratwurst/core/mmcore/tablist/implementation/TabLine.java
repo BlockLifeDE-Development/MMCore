@@ -28,7 +28,7 @@ import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
 public class TabLine implements ITabLine {
 
   public TabLine(final int index) {
-    this(UUID.randomUUID(), index, "");
+    this(UUID.randomUUID(), index, " ");
   }
 
   public TabLine(final int index, final String display) {
@@ -36,7 +36,7 @@ public class TabLine implements ITabLine {
   }
 
   public TabLine(final UUID playerID, final int index, final String display) {
-    final GameProfile profile = new GameProfile(playerID, " " + (char) index);
+    final GameProfile profile = new GameProfile(playerID, " " + index);
     final MinecraftServer server = ((CraftServer) Bukkit.getServer()).getServer();
     final WorldServer worldServer = ((CraftWorld) Bukkit.getWorlds().get(0)).getHandle();
 
@@ -45,19 +45,20 @@ public class TabLine implements ITabLine {
 
     this.entity = player;
     this.showPacket = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.a, player);
-    this.hidePacket = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.e, player);
     this.namePacket = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.d, player);
+    this.hidePacket = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.e, player);
   }
 
   @Getter
   private final EntityPlayer entity;
   private PacketPlayOutPlayerInfo showPacket;
   private final PacketPlayOutPlayerInfo hidePacket;
-  private final PacketPlayOutPlayerInfo namePacket;
+  private PacketPlayOutPlayerInfo namePacket;
 
   @Override
   public void setDisplay(final String display) {
     this.entity.listName = new ChatMessage(display);
+    this.namePacket = new PacketPlayOutPlayerInfo(EnumPlayerInfoAction.d, this.entity);
   }
 
   @Override

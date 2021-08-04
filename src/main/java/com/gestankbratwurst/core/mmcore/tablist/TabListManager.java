@@ -1,7 +1,7 @@
 package com.gestankbratwurst.core.mmcore.tablist;
 
-import com.gestankbratwurst.core.mmcore.tablist.abstraction.ITabList;
 import com.gestankbratwurst.core.mmcore.tablist.abstraction.TabView;
+import com.gestankbratwurst.core.mmcore.tablist.implementation.AbstractTabList;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.function.Function;
@@ -20,14 +20,14 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class TabListManager {
 
-  public TabListManager(final JavaPlugin plugin, final Function<Player, ITabList> defaultTablistProvider) {
+  public TabListManager(final JavaPlugin plugin, final Function<Player, AbstractTabList> defaultTabListProvider) {
     this.tabViewMap = Maps.newHashMap();
     Bukkit.getPluginManager().registerEvents(new TabListListener(this), plugin);
-    this.defaultTablistProvider = defaultTablistProvider;
+    this.defaultTabListProvider = defaultTabListProvider;
   }
 
   private final Map<Player, TabView> tabViewMap;
-  private final Function<Player, ITabList> defaultTablistProvider;
+  private final Function<Player, AbstractTabList> defaultTabListProvider;
 
   public TabView getView(final Player player) {
     return this.tabViewMap.get(player);
@@ -35,8 +35,9 @@ public class TabListManager {
 
   protected void addPlayer(final Player player) {
     this.tabViewMap.put(player, new TabView(player));
-    this.tabViewMap.get(player).setTablist(this.defaultTablistProvider.apply(player));
-    this.tabViewMap.get(player).setAndUpdate(this.defaultTablistProvider.apply(player));
+    final AbstractTabList tabList = this.defaultTabListProvider.apply(player);
+    tabList.init();
+    this.tabViewMap.get(player).setAndUpdate(tabList);
   }
 
   protected void removePlayer(final Player player) {

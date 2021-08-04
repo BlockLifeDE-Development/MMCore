@@ -10,9 +10,9 @@ import lombok.Getter;
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
  *
- * This file is part of avarioncore and was created at the 23.03.2020
+ * This file is part of MMCore and was created at the 28.07.2021
  *
- * LaLaLand-CorePlugin can not be copied and/or distributed without the express
+ * MMCore can not be copied and/or distributed without the express
  * permission of the owner.
  *
  */

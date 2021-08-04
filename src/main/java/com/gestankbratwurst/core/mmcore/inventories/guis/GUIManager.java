@@ -8,15 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
-/*******************************************************
- * Copyright (C) Gestankbratwurst suotokka@gmail.com
- *
- * This file is part of MMCore and was created at the 27.07.2021
- *
- * MMCore can not be copied and/or distributed without the express
- * permission of the owner.
- *
- */
 public class GUIManager {
 
   protected static GUIManager instance;

@@ -1,5 +1,6 @@
 package com.gestankbratwurst.core.mmcore.inventories.anvil;
 
+import com.gestankbratwurst.core.mmcore.MMCore;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import org.apache.commons.lang.Validate;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 
 public class AnvilGUI {
 
@@ -318,7 +320,7 @@ public class AnvilGUI {
     /**
      * The {@link Plugin} that this anvil GUI is associated with
      */
-    private Plugin plugin;
+    private Plugin plugin = JavaPlugin.getPlugin(MMCore.class);
     /**
      * The text that will be displayed to the user
      */

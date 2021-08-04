@@ -1,14 +1,30 @@
 package com.gestankbratwurst.core.mmcore.protocol.holograms;
 
-/*******************************************************
- * Copyright (C) Gestankbratwurst suotokka@gmail.com
- *
- * This file is part of MMCore and was created at the 28.07.2021
- *
- * MMCore can not be copied and/or distributed without the express
- * permission of the owner.
- *
- */
-public interface IHologramLine {
+import org.bukkit.Location;
+import org.bukkit.entity.Player;
+import org.bukkit.util.Consumer;
+import org.bukkit.util.Vector;
+
+public interface IHologramLine<T> {
+
+  AbstractHologram getHostingHologram();
+
+  T getCurrentValue();
+
+  Location getLocation();
+
+  void showTo(Player player);
+
+  void hideFrom(Player player);
+
+  void update(T newValue);
+
+  HologramLineType getType();
+
+  void registerClickAction(Consumer<Player> action);
+
+  void onClick(Player player);
+
+  void sendMove(Player player, Vector direction);
 
 }

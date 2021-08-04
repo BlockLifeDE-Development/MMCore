@@ -2,16 +2,15 @@ package com.gestankbratwurst.core.mmcore.actionbar;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
  *
- * This file is part of avarioncore and was created at the 23.03.2020
+ * This file is part of MMCore and was created at the 28.07.2021
  *
- * LaLaLand-CorePlugin can not be copied and/or distributed without the express
+ * MMCore can not be copied and/or distributed without the express
  * permission of the owner.
  *
  */
@@ -19,15 +18,12 @@ public class ActionBarBoard {
 
   protected static final int MIN_SECTION_LENGTH = 20;
 
-  protected ActionBarBoard(final UUID playerID, final ActionBarManager actionBarManager) {
-    this.playerID = playerID;
+  protected ActionBarBoard(final ActionBarManager actionBarManager) {
     this.sections = new ActionBarSection[3];
     this.sections[0] = new ActionBarSection(actionBarManager);
     this.sections[1] = new ActionBarSection(actionBarManager);
     this.sections[2] = new ActionBarSection(actionBarManager);
   }
-
-  private final UUID playerID;
 
   private final ActionBarSection[] sections;
   @Getter

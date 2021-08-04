@@ -34,6 +34,10 @@ public class TaskManager {
     this.plugin = plugin;
   }
 
+  public void runTaskTimer(final Runnable runnable, final int initialDelay, final int repeatedDelay) {
+    Bukkit.getScheduler().runTaskTimer(this.plugin, runnable, initialDelay, repeatedDelay);
+  }
+
   public <U> Consumer<U> consumeBukkitSync(final Consumer<U> asyncAction) {
     return (u) -> this.bukkitScheduler.runTask(this.plugin, () -> asyncAction.accept(u));
   }

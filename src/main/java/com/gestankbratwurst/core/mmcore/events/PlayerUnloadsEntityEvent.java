@@ -1,19 +1,21 @@
 package com.gestankbratwurst.core.mmcore.events;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.player.PlayerEvent;
 
 public class PlayerUnloadsEntityEvent extends PlayerEvent {
 
-  private final int[] entityIDs;
+  private final IntList entityIDs;
 
-  public PlayerUnloadsEntityEvent(final Player who, final int[] entityIDs) {
+  public PlayerUnloadsEntityEvent(final Player who, final IntList entityIDs) {
     super(who);
     this.entityIDs = entityIDs;
   }
 
-  public int[] getEntityIDs() {
+
+  public IntList getEntityIDs() {
     return this.entityIDs;
   }
 

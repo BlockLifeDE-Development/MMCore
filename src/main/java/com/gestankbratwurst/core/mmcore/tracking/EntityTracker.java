@@ -7,11 +7,13 @@ import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import com.gestankbratwurst.core.mmcore.events.PlayerReceiveEntityEvent;
 import com.gestankbratwurst.core.mmcore.events.PlayerUnloadsEntityEvent;
+import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import net.minecraft.network.protocol.game.PacketPlayOutEntityDestroy;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -58,8 +60,9 @@ public class EntityTracker implements Listener {
           }
 
           final PacketContainer packet = event.getPacket();
+          final PacketPlayOutEntityDestroy destroyPacket = (PacketPlayOutEntityDestroy) packet.getHandle();
 
-          final int[] entityIDs = packet.getIntegerArrays().getValues().get(0);
+          final IntList entityIDs = destroyPacket.b();
           final Player viewer = event.getPlayer();
 
           final PlayerUnloadsEntityEvent unloadEvent = new PlayerUnloadsEntityEvent(viewer, entityIDs);
@@ -87,9 +90,7 @@ public class EntityTracker implements Listener {
   @EventHandler(priority = EventPriority.HIGH)
   public void onEntityHiding(final PlayerUnloadsEntityEvent event) {
     final Set<Integer> ints = playerViews.get(event.getPlayer());
-    for (final int id : event.getEntityIDs()) {
-      ints.remove(id);
-    }
+    ints.removeAll(event.getEntityIDs());
   }
 
   public static IntSet getEntityViewOf(final Player player) {

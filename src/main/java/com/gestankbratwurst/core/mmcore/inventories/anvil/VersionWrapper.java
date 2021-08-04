@@ -3,12 +3,6 @@ package com.gestankbratwurst.core.mmcore.inventories.anvil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 
-/**
- * Wraps versions to be able to easily use different NMS server versions
- *
- * @author Wesley Smith
- * @since 1.0
- */
 public interface VersionWrapper {
 
   /**

@@ -3,17 +3,17 @@ package com.gestankbratwurst.core.mmcore.actionbar;
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
  *
- * This file is part of avarioncore and was created at the 23.03.2020
+ * This file is part of MMCore and was created at the 28.07.2021
  *
- * LaLaLand-CorePlugin can not be copied and/or distributed without the express
+ * MMCore can not be copied and/or distributed without the express
  * permission of the owner.
  *
  */
-public class ActionBarUpdateThread implements Runnable {
+public class ActionBarUpdateRunnable implements Runnable {
 
   protected static final long UPDATE_PERIOD = 10L;
 
-  public ActionBarUpdateThread(final ActionBarManager actionBarManager) {
+  public ActionBarUpdateRunnable(final ActionBarManager actionBarManager) {
     this.actionBarManager = actionBarManager;
   }
 

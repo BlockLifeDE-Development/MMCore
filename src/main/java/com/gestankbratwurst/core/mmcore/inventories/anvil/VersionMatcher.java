@@ -4,12 +4,6 @@ import java.util.Collections;
 import java.util.List;
 import org.bukkit.Bukkit;
 
-/**
- * Matches the server's NMS version to its {@link VersionWrapper}
- *
- * @author Wesley Smith
- * @since 1.2.1
- */
 public class VersionMatcher {
 
   /**

@@ -4,11 +4,11 @@ import co.aikar.commands.PaperCommandManager;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.gestankbratwurst.core.mmcore.actionbar.ActionBarManager;
-import com.gestankbratwurst.core.mmcore.scoreboard.ScoreboardAPI;
+import com.gestankbratwurst.core.mmcore.protocol.holograms.impl.HologramManager;
 import com.gestankbratwurst.core.mmcore.scoreboard.ScoreboardManager;
 import com.gestankbratwurst.core.mmcore.skinclient.PlayerSkinManager;
 import com.gestankbratwurst.core.mmcore.tablist.TabListManager;
-import com.gestankbratwurst.core.mmcore.tablist.implementation.EmptyTablist;
+import com.gestankbratwurst.core.mmcore.tablist.implementation.EmptyTabList;
 import com.gestankbratwurst.core.mmcore.tracking.ChunkTracker;
 import com.gestankbratwurst.core.mmcore.tracking.EntityTracker;
 import com.gestankbratwurst.core.mmcore.util.common.BukkitTime;
@@ -41,6 +41,8 @@ public final class MMCore extends JavaPlugin {
   @Getter
   private static ActionBarManager actionBarManager;
   @Getter
+  private static HologramManager hologramManager;
+  @Getter
   private static TabListManager tabListManager;
   @Getter
   private static ItemDisplayCompiler displayCompiler;
@@ -56,20 +58,25 @@ public final class MMCore extends JavaPlugin {
   @Override
   public void onEnable() {
     instance = this;
+    this.getLogger().info("Creating manager instances.");
+
     paperCommandManager = new PaperCommandManager(this);
     protocolManager = ProtocolLibrary.getProtocolManager();
     actionBarManager = new ActionBarManager(this);
-    tabListManager = new TabListManager(this, player -> new EmptyTablist(tabListManager));
+    hologramManager = new HologramManager(this);
+    tabListManager = new TabListManager(this, player -> new EmptyTabList());
     displayCompiler = new ItemDisplayCompiler(this);
     playerSkinManager = new PlayerSkinManager();
-    scoreboardManager = new ScoreboardAPI(this).getBoardManager();
+    // scoreboardManager = new ScoreboardAPI(this).getBoardManager();
 
     this.registerDefaultGsonSerializer();
     this.initUtils();
+
+    TutorialStuff.enable();
   }
 
   private void registerDefaultGsonSerializer() {
-    this.getLogger().info("");
+    this.getLogger().info("Registering default gson serializer.");
     GsonProvider.register(ItemStack.class, new ItemStackSerializer());
     GsonProvider.register(CraftItemStack.class, new ItemStackSerializer());
     GsonProvider.register(ItemStack[].class, new ItemStackArraySerializer());
@@ -80,6 +87,7 @@ public final class MMCore extends JavaPlugin {
   }
 
   private void initUtils() {
+    this.getLogger().info("Initiating utility classes.");
     ProtocolLibrary.getProtocolManager().addPacketListener(displayCompiler);
     BukkitTime.start(this);
     ChatInput.init(this);
