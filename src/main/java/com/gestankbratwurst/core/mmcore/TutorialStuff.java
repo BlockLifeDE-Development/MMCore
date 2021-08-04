@@ -2,6 +2,7 @@ package com.gestankbratwurst.core.mmcore;
 
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
+import org.bukkit.metadata.LazyMetadataValue;
 
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
@@ -16,6 +17,7 @@ public class TutorialStuff implements Listener {
 
   public static void enable() {
     Bukkit.getPluginManager().registerEvents(new TutorialStuff(), MMCore.getInstance());
+    LazyMetadataValue m;
   }
 
 }
