@@ -4,11 +4,16 @@ import co.aikar.commands.PaperCommandManager;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.gestankbratwurst.core.mmcore.actionbar.ActionBarManager;
+import com.gestankbratwurst.core.mmcore.data.access.DataAccess;
+import com.gestankbratwurst.core.mmcore.data.config.MMCoreConfigManager;
+import com.gestankbratwurst.core.mmcore.data.config.MMCoreConfiguration;
+import com.gestankbratwurst.core.mmcore.data.model.DataManager;
+import com.gestankbratwurst.core.mmcore.data.mongodb.MongoIO;
 import com.gestankbratwurst.core.mmcore.protocol.holograms.impl.HologramManager;
-import com.gestankbratwurst.core.mmcore.scoreboard.ScoreboardManager;
 import com.gestankbratwurst.core.mmcore.skinclient.PlayerSkinManager;
 import com.gestankbratwurst.core.mmcore.tablist.TabListManager;
 import com.gestankbratwurst.core.mmcore.tablist.implementation.EmptyTabList;
+import com.gestankbratwurst.core.mmcore.tokenclick.TokenActionManager;
 import com.gestankbratwurst.core.mmcore.tracking.ChunkTracker;
 import com.gestankbratwurst.core.mmcore.tracking.EntityTracker;
 import com.gestankbratwurst.core.mmcore.util.common.BukkitTime;
@@ -18,21 +23,17 @@ import com.gestankbratwurst.core.mmcore.util.common.UtilItem;
 import com.gestankbratwurst.core.mmcore.util.common.UtilMobs;
 import com.gestankbratwurst.core.mmcore.util.common.UtilPlayer;
 import com.gestankbratwurst.core.mmcore.util.items.display.ItemDisplayCompiler;
-import com.gestankbratwurst.core.mmcore.util.json.BoundingBoxSerializer;
-import com.gestankbratwurst.core.mmcore.util.json.GsonProvider;
-import com.gestankbratwurst.core.mmcore.util.json.ItemStackArraySerializer;
-import com.gestankbratwurst.core.mmcore.util.json.ItemStackSerializer;
-import com.gestankbratwurst.core.mmcore.util.json.LocationSerializer;
-import com.gestankbratwurst.core.mmcore.util.json.MultimapSerializer;
-import com.google.common.collect.Multimap;
+import com.gestankbratwurst.core.mmcore.util.json.JacksonProvider;
+import com.gestankbratwurst.core.mmcore.util.json.commons.ItemStackDeserializer;
+import com.gestankbratwurst.core.mmcore.util.json.commons.ItemStackSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.BoundingBox;
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 
 public final class MMCore extends JavaPlugin {
 
@@ -50,40 +51,58 @@ public final class MMCore extends JavaPlugin {
   private static ProtocolManager protocolManager;
   @Getter
   private static PlayerSkinManager playerSkinManager;
-  @Getter
-  private static ScoreboardManager scoreboardManager;
+  // @Getter
+  // private static ScoreboardManager scoreboardManager;
   @Getter
   private static PaperCommandManager paperCommandManager;
+  @Getter
+  private static TokenActionManager tokenActionManager;
+  @Getter
+  private static DataManager dataManager;
+  @Getter
+  private static RedissonClient redissonClient;
+  @Getter
+  private static MongoIO mongoIO;
 
   @Override
   public void onEnable() {
     instance = this;
+    this.getLogger().info("Loading configuration data.");
+    MMCoreConfigManager.init(this);
+
+    this.getLogger().info("Creating Redisson client.");
+    final Config config = new Config();
+    config.useSingleServer().setAddress(MMCoreConfiguration.get().getRedisAddress());
+    config.setCodec(JacksonProvider.getCodec());
+    redissonClient = Redisson.create(config);
+
+    this.getLogger().info("Creating MongoDB client.");
+    mongoIO = new MongoIO();
+
+    DataAccess.init(redissonClient, MMCoreConfiguration.get().getServerType());
+
     this.getLogger().info("Creating manager instances.");
 
     paperCommandManager = new PaperCommandManager(this);
     protocolManager = ProtocolLibrary.getProtocolManager();
+    dataManager = new DataManager(redissonClient, mongoIO);
     actionBarManager = new ActionBarManager(this);
     hologramManager = new HologramManager(this);
     tabListManager = new TabListManager(this, player -> new EmptyTabList());
     displayCompiler = new ItemDisplayCompiler(this);
     playerSkinManager = new PlayerSkinManager();
+    tokenActionManager = new TokenActionManager();
     // scoreboardManager = new ScoreboardAPI(this).getBoardManager();
 
-    this.registerDefaultGsonSerializer();
+    this.registerDefaultJacksonSerializer();
     this.initUtils();
 
     TutorialStuff.enable();
   }
 
-  private void registerDefaultGsonSerializer() {
-    this.getLogger().info("Registering default gson serializer.");
-    GsonProvider.register(ItemStack.class, new ItemStackSerializer());
-    GsonProvider.register(CraftItemStack.class, new ItemStackSerializer());
-    GsonProvider.register(ItemStack[].class, new ItemStackArraySerializer());
-    GsonProvider.register(CraftItemStack[].class, new ItemStackArraySerializer());
-    GsonProvider.register(Location.class, new LocationSerializer());
-    GsonProvider.register(Multimap.class, new MultimapSerializer());
-    GsonProvider.register(BoundingBox.class, new BoundingBoxSerializer());
+  private void registerDefaultJacksonSerializer() {
+    this.getLogger().info("Registering default jackson serializer.");
+    JacksonProvider.register(CraftItemStack.class, new ItemStackSerializer(), new ItemStackDeserializer());
   }
 
   private void initUtils() {
@@ -102,5 +121,6 @@ public final class MMCore extends JavaPlugin {
   @Override
   public void onDisable() {
     // Plugin shutdown logic
+    dataManager.expireAllDomains();
   }
 }

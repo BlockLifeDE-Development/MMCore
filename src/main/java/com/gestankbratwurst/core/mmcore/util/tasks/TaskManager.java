@@ -1,7 +1,10 @@
 package com.gestankbratwurst.core.mmcore.util.tasks;
 
 import com.gestankbratwurst.core.mmcore.MMCore;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -23,15 +26,25 @@ public class TaskManager {
   }
 
   @Getter
-  private final ScheduledExecutorService scheduler;
+  private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
   private final BukkitScheduler bukkitScheduler;
   private final JavaPlugin plugin;
 
   public TaskManager(final MMCore plugin) {
-    final int threadPoolSize = 2;
     this.bukkitScheduler = Bukkit.getScheduler();
-    this.scheduler = Executors.newScheduledThreadPool(threadPoolSize);
     this.plugin = plugin;
+  }
+
+  public static void onSingleExecutorBlocking(final Runnable runnable) {
+    try {
+      scheduler.submit(runnable).get();
+    } catch (final InterruptedException | ExecutionException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static Future<?> onSingleExecutor(final Runnable runnable) {
+    return scheduler.submit(runnable);
   }
 
   public void runTaskTimer(final Runnable runnable, final int initialDelay, final int repeatedDelay) {
@@ -57,7 +70,15 @@ public class TaskManager {
    */
   public ScheduledFuture<?> executeScheduledTask(final Runnable runnable, final long delay,
       final long repeat, final TimeUnit timeUnit) {
-    return this.scheduler.scheduleAtFixedRate(runnable, delay, repeat, timeUnit);
+    return scheduler.scheduleAtFixedRate(runnable, delay, repeat, timeUnit);
+  }
+
+  public Future<?> callSyncMethod(final Runnable runnable) {
+    return this.bukkitScheduler.callSyncMethod(this.plugin, Executors.callable(runnable));
+  }
+
+  public <T> Future<T> callSyncMethod(final Callable<T> callable) {
+    return this.bukkitScheduler.callSyncMethod(this.plugin, callable);
   }
 
   // Replaces everything but 0-9
@@ -76,7 +97,7 @@ public class TaskManager {
    * @param runnable the runnable to execute.
    */
   public void executeTask(final Runnable runnable) {
-    this.scheduler.execute(runnable);
+    scheduler.execute(runnable);
   }
 
   /**

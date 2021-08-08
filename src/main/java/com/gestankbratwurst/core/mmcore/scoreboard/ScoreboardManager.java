@@ -26,17 +26,17 @@ public class ScoreboardManager implements Listener, Runnable, PlayerBoardManager
   private final Map<UUID, Team> users = new Object2ObjectOpenHashMap<>();
   private final Map<UUID, PlayerBoard> boards = new Object2ObjectOpenHashMap<>();
 
-  private final Scoreboard titleboard;
+  private final Scoreboard titleBoard;
   private final ScoreboardAPI api;
 
   protected ScoreboardManager(final ScoreboardAPI api) {
     this.api = api;
     ProtocolLibrary.getProtocolManager().addPacketListener(new TeamPacketListener(api.getHost(), this));
 
-    this.titleboard = Bukkit.getScoreboardManager().getNewScoreboard();
+    this.titleBoard = Bukkit.getScoreboardManager().getNewScoreboard();
     Bukkit.getPluginManager().registerEvents(this, api.getHost());
 
-    final Objective obj = this.titleboard.registerNewObjective("sidebar", "dummy", " ");
+    final Objective obj = this.titleBoard.registerNewObjective("sidebar", "dummy", " ");
     obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
     Bukkit.getScheduler().runTaskTimerAsynchronously(api.getHost(), this, 20, 5);
@@ -63,15 +63,15 @@ public class ScoreboardManager implements Listener, Runnable, PlayerBoardManager
       throw new IllegalArgumentException("Priority cannot be higher than 99");
     }
 
-    final Team team = this.titleboard.registerNewTeam(priority + name);
+    final Team team = this.titleBoard.registerNewTeam(priority + name);
 
     team.setPrefix("");
     team.setSuffix("");
     team.setColor(ChatColor.WHITE);
     team.addEntry(player.getName());
     this.users.put(player.getUniqueId(), team);
-
-    player.setScoreboard(this.titleboard);
+    
+    player.setScoreboard(this.titleBoard);
     this.boards.put(player.getUniqueId(), new PlayerBoard(player));
   }
 
@@ -119,13 +119,8 @@ public class ScoreboardManager implements Listener, Runnable, PlayerBoardManager
     this.users.get(player.getUniqueId()).setSuffix(suffix);
   }
 
-  @Override
-  public Map<UUID, Team> getUsers() {
-    return this.users;
-  }
-
   private Scoreboard getScoreboard() {
-    return this.titleboard;
+    return this.titleBoard;
   }
 
   @EventHandler
