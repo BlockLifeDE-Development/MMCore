@@ -1,11 +1,13 @@
 package com.gestankbratwurst.core.mmcore;
 
 import com.gestankbratwurst.core.mmcore.data.model.IndexableObject;
+import com.gestankbratwurst.core.mmcore.util.common.UtilLoc;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
 /*******************************************************
@@ -24,7 +26,19 @@ public class DataObject implements IndexableObject<UUID> {
   private final UUID uid = UUID.randomUUID();
   @Getter
   @Setter
+  private Location location;
+  @Getter
+  @Setter
   private ItemStack itemStack;
+  @Getter
+  @Setter
+  private int age;
+  /*
+  @Getter
+  @Setter
+  private int data;
+   */
+
 
   @Override
   public String getIndexedField() {
@@ -38,7 +52,8 @@ public class DataObject implements IndexableObject<UUID> {
 
   @Override
   public String toString() {
-    return this.itemStack.toString();
+    // return "" + this.data;
+    return UtilLoc.locToString(this.location);
   }
 
 }

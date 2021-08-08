@@ -1,7 +1,6 @@
 package com.gestankbratwurst.core.mmcore.util.json.commons;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -26,8 +25,7 @@ public class ItemStackDeserializer extends StdDeserializer<CraftItemStack> {
   }
 
   @Override
-  public CraftItemStack deserialize(final JsonParser parser, final DeserializationContext ctxt)
-      throws IOException, JsonProcessingException {
+  public CraftItemStack deserialize(final JsonParser parser, final DeserializationContext ctxt) throws IOException {
     final JsonNode node = parser.getCodec().readTree(parser);
     final String value = node.get("Item").asText();
     return (CraftItemStack) UtilItem.deserializeItemStack(value);

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.util.function.Consumer;
 import lombok.Getter;
 import lombok.SneakyThrows;
-import org.redisson.codec.JsonJacksonCodec;
 
 /*******************************************************
  * Copyright (C) Gestankbratwurst suotokka@gmail.com
@@ -21,25 +20,28 @@ import org.redisson.codec.JsonJacksonCodec;
 public class JacksonProvider {
 
   @Getter
-  private static final JsonJacksonCodec codec = new JsonJacksonCodec();
+  private static final ExposedJacksonCodec codec = new ExposedJacksonCodec();
   private static final SimpleModule module = new SimpleModule();
   private static final ObjectMapper objectMapper = codec.getObjectMapper();
 
   @SneakyThrows
   public static <T> String serialize(final T object) {
-    return objectMapper.registerModule(module).writeValueAsString(object);
+    return objectMapper.writeValueAsString(object);
   }
 
   @SneakyThrows
   public static <T> T deserialize(final String json, final Class<T> tClass) {
-    return objectMapper.registerModule(module).readValue(json, tClass);
+    return objectMapper.readValue(json, tClass);
   }
 
   public static <T> void register(final Class<T> tClass, final JsonSerializer<T> serializer,
-      final JsonDeserializer<? extends T> deserializer) {
+      final JsonDeserializer<? extends T> deserializer, final boolean excludeFromTypeResolver) {
     module.addSerializer(serializer);
     module.addDeserializer(tClass, deserializer);
     objectMapper.registerModule(module);
+    if (excludeFromTypeResolver) {
+      codec.addExcludedTypeForTypeResolver(tClass);
+    }
   }
 
   public static void applyToModule(final Consumer<SimpleModule> moduleConsumer) {

@@ -26,9 +26,12 @@ import com.gestankbratwurst.core.mmcore.util.items.display.ItemDisplayCompiler;
 import com.gestankbratwurst.core.mmcore.util.json.JacksonProvider;
 import com.gestankbratwurst.core.mmcore.util.json.commons.ItemStackDeserializer;
 import com.gestankbratwurst.core.mmcore.util.json.commons.ItemStackSerializer;
+import com.gestankbratwurst.core.mmcore.util.json.commons.LocationDeserializer;
+import com.gestankbratwurst.core.mmcore.util.json.commons.LocationSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.redisson.Redisson;
@@ -101,8 +104,9 @@ public final class MMCore extends JavaPlugin {
   }
 
   private void registerDefaultJacksonSerializer() {
-    this.getLogger().info("Registering default jackson serializer.");
-    JacksonProvider.register(CraftItemStack.class, new ItemStackSerializer(), new ItemStackDeserializer());
+    this.getLogger().info("Registering default jackson (de)serializer.");
+    JacksonProvider.register(Location.class, new LocationSerializer(), new LocationDeserializer(), true);
+    JacksonProvider.register(CraftItemStack.class, new ItemStackSerializer(), new ItemStackDeserializer(), false);
   }
 
   private void initUtils() {
