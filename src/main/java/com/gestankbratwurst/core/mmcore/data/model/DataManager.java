@@ -20,6 +20,7 @@ import org.redisson.api.RedissonClient;
 public class DataManager {
 
   public static final String PLAYER_DOMAIN_KEY = "PlayerData";
+  public static final String GLOBAL_DOMAIN_KEY = "GlobalData";
   public static final BinarySwap<UUID> UUID_SWAP = BinarySwap.<UUID>builder()
       .keyToString(UUID::toString)
       .stringToKey(UUID::fromString)
@@ -44,6 +45,10 @@ public class DataManager {
 
   public void expireAllDomains() {
     this.agnosticDataDomainMap.values().forEach(AgnosticDataDomain::expire);
+  }
+
+  public AgnosticDataDomain<String> getGlobalDataDomain() {
+    return this.getOrCreateDataDomain(GLOBAL_DOMAIN_KEY, DEFAULT_CACHE_TIME_MINUTES, STRING_SWAP);
   }
 
   public AgnosticDataDomain<UUID> getPlayerDataDomain() {

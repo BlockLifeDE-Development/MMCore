@@ -43,5 +43,15 @@ public class MMCoreConfiguration {
   private final int cacheWriteBehindDelayMillis = 5000;
   @JsonProperty("CacheWriteBehindBatchSize")
   private final int cacheWriteBehindBatchSize = 50;
+  @JsonProperty("ResourcePackServerIP")
+  private final String resourcePackServerIP = "127.0.0.1";
+  @JsonProperty("ResourcePackServerPort")
+  private final int resourcePackServerPort = 9988;
+  @JsonProperty("MineSkinClientAPIToken")
+  private final String mineSkinClientAPIToken = "4e4d5e9f0d61a084e0673f99f49fd182280fb670151209f46fdc5c2a38867fdb";
+  @JsonProperty("MineSkinClientKeySecret")
+  private final String mineSkinClientKeySecret = "4ee3343aec34213a2df5616b137c6a36f4a0e89884b9b3b4852019b7faa33c4d912d9cd89c78c4b968d0b78d34b0c35d9025b8f7d7da4a78c2ca131ff5c05528";
+  @JsonProperty("MineSkinClientUserAgent")
+  private final String mineSkinClientUserAgent = "BlockLifeAgent";
 
 }

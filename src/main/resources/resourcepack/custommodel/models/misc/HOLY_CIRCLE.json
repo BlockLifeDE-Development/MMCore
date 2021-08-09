@@ -1,0 +1,44 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "custom/holy_circle",
+		"particle": "custom/holy_circle"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 0.1, 16],
+			"faces": {
+				"north": {"uv": [0, 15.83893, 16, 16], "texture": "#0"},
+				"east": {"uv": [0, 15.83893, 16, 16], "texture": "#0"},
+				"south": {"uv": [0, 15.3736, 16, 16], "texture": "#0"},
+				"west": {"uv": [0, 15.83893, 16, 16], "texture": "#0"},
+				"up": {"uv": [0.03579, 0.07159, 15.96421, 15.96421], "texture": "#0"},
+				"down": {"uv": [0.10738, 0.03579, 15.92841, 16], "texture": "#0"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"translation": [0, 10, 0]
+		},
+		"thirdperson_lefthand": {
+			"translation": [0, 10, 0]
+		},
+		"firstperson_righthand": {
+			"translation": [0, 7, 0]
+		},
+		"firstperson_lefthand": {
+			"translation": [0, 7, 0]
+		},
+		"ground": {
+			"translation": [0, 4.25, 0],
+			"scale": [4, 1, 4]
+		},
+		"head": {
+			"translation": [0, -38, 0],
+			"scale": [4, 1, 4]
+		}
+	}
+}

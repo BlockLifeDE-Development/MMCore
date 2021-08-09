@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeModifier;
 import org.bukkit.enchantments.Enchantment;
@@ -140,10 +141,14 @@ public class ItemBuilder {
     return this;
   }
 
-  public <T, Z> ItemBuilder addPersistentData(final String key, final PersistentDataType<T, Z> type, final Z value) {
+  public <T, Z> ItemBuilder addPersistentData(final NamespacedKey key, final PersistentDataType<T, Z> type, final Z value) {
     final PersistentDataContainer pdc = this.itemMeta.getPersistentDataContainer();
-    pdc.set(NamespaceFactory.provide(key), type, value);
+    pdc.set(key, type, value);
     return this;
+  }
+
+  public <T, Z> ItemBuilder addPersistentData(final String key, final PersistentDataType<T, Z> type, final Z value) {
+    return this.addPersistentData(NamespaceFactory.provide(key), type, value);
   }
 
   public ItemBuilder modelData(final int customModelData) {

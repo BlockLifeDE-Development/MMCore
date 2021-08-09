@@ -1,26 +1,20 @@
 package com.gestankbratwurst.core.mmcore.skinclient;
 
 import com.gestankbratwurst.core.mmcore.MMCore;
-import com.gestankbratwurst.core.mmcore.skinclient.data.Skin;
-import com.gestankbratwurst.core.mmcore.skinclient.data.SkinCallback;
+import com.gestankbratwurst.core.mmcore.data.config.MMCoreConfiguration;
+import com.gestankbratwurst.core.mmcore.data.model.AgnosticDataDomain;
+import com.gestankbratwurst.core.mmcore.skinclient.mineskin.MineskinClient;
+import com.gestankbratwurst.core.mmcore.skinclient.mineskin.SkinOptions;
+import com.gestankbratwurst.core.mmcore.skinclient.mineskin.Variant;
+import com.gestankbratwurst.core.mmcore.skinclient.mineskin.Visibility;
+import com.gestankbratwurst.core.mmcore.skinclient.mineskin.data.Skin;
 import com.google.common.base.Preconditions;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -38,80 +32,90 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public class PlayerSkinManager {
 
-  public PlayerSkinManager() {
-    this.mineskinClient = new MineskinClient();
+  protected PlayerSkinManager() {
+    final MMCoreConfiguration configuration = MMCoreConfiguration.get();
+    this.mineskinClient = new MineskinClient(configuration.getMineSkinClientUserAgent(), configuration.getMineSkinClientAPIToken());
     this.skinMap = new HashMap<>();
-    this.downloadRequests = new HashSet<>();
+    this.namedSkinIds = new HashMap<>();
   }
 
-  private final Set<Integer> downloadRequests;
+  private final HashMap<String, Integer> namedSkinIds;
   private final HashMap<Integer, Skin> skinMap;
-  private final MineskinClient mineskinClient;
+  private final transient MineskinClient mineskinClient;
 
-  public void cacheSkins(final File cacheFile) throws IOException {
-    final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    final JsonObject json = new JsonObject();
-    this.skinMap.forEach((key, value) -> {
-      final JsonObject skinJson = gson.toJsonTree(value).getAsJsonObject();
-      json.add("" + key, skinJson);
+  public static PlayerSkinManager load() {
+    final AgnosticDataDomain<String> skinDomain = MMCore.getDataManager().getGlobalDataDomain();
+    skinDomain.getOrCreateDataHolder("SkinCache").join();
+    final PlayerSkinManager loadedManager = skinDomain.getDataHolder("SkinCache").join().getData(PlayerSkinManager.class);
+    return loadedManager == null ? new PlayerSkinManager() : loadedManager;
+  }
+
+  public void persist() {
+    final AgnosticDataDomain<String> skinDomain = MMCore.getDataManager().getGlobalDataDomain();
+    skinDomain.getOrCreateDataHolder("SkinCache").join();
+    skinDomain.applyToDataHolder("SkinCache", dataHolder -> {
+      dataHolder.putData(PlayerSkinManager.class, this);
+      return dataHolder;
     });
-    final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(cacheFile));
-    osw.write(gson.toJson(json));
-    osw.close();
   }
 
-  public void loadSkins(final File cacheFile) throws IOException {
-    if (!cacheFile.exists()) {
-      return;
-    }
-    final Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
-    final InputStreamReader isr = new InputStreamReader(new FileInputStream(cacheFile));
-    final StringBuilder builder = new StringBuilder();
-    int read;
-    while ((read = isr.read()) != -1) {
-      builder.append((char) read);
-    }
-    isr.close();
-    final JsonObject json = gson.fromJson(builder.toString(), JsonObject.class);
-    for (final Entry<String, JsonElement> entry : json.entrySet()) {
-      final int id = Integer.parseInt(entry.getKey());
-      final Skin skin = gson.fromJson(entry.getValue(), Skin.class);
-      Preconditions.checkState(skin != null);
-      this.skinMap.put(id, skin);
-    }
-  }
+  public void requestNamedSkin(final String skinName, final File imageFile, final boolean scale, final Consumer<Skin> skinConsumer) {
+    Integer id = this.namedSkinIds.get(skinName);
 
-  public void requestSkin(final int id, final ConsumingCallback skinCallback) {
-    final Skin skin = this.skinMap.get(id);
-    if (skin != null) {
-      final long unixWeek = TimeUnit.DAYS.toMillis(7);
-      final long unixDay = unixWeek / 7;
-      if (skin.downloadTimestamp + unixWeek + ThreadLocalRandom.current().nextLong(-unixDay, unixDay) < System.currentTimeMillis()) {
-        JavaPlugin.getPlugin(MMCore.class).getLogger().info("Skin with ID [" + id + "] has old cache data. Downloading.");
-        this.mineskinClient.getSkin(id, skinCallback);
-        this.downloadRequests.add(id);
-        return;
+    if (id == null) {
+      if (scale) {
+        this.uploadAndScaleHeadImage(imageFile, skinName, uploadedSkin -> this.namedSkinIds.put(skinName, uploadedSkin.id));
+      } else {
+        this.uploadImage(imageFile, skinName, uploadedSkin -> this.namedSkinIds.put(skinName, uploadedSkin.id));
       }
-      JavaPlugin.getPlugin(MMCore.class).getLogger().info("Getting Skin with ID [" + id + "] from skin cache.");
-      skinCallback.skinConsumer.accept(skin);
-      skinCallback.locked = false;
+    }
+
+    id = this.namedSkinIds.get(skinName);
+
+    if (id == null) {
       return;
     }
-    JavaPlugin.getPlugin(MMCore.class).getLogger().info("§7Downloading Skin with ID [" + id + "] from Mineskin.org");
-    this.downloadRequests.add(id);
-    this.mineskinClient.getSkin(id, skinCallback);
+    this.requestSkin(id, skinConsumer);
   }
 
-  public void uploadImage(final File imageFile, final String name, final ConsumingCallback skinCallback) throws IOException {
+  public void requestSkin(final int id, final Consumer<Skin> skinConsumer) {
+    Skin skin = this.skinMap.get(id);
+
+    final long unixWeek = TimeUnit.DAYS.toMillis(7);
+    final long unixDay = unixWeek / 7;
+
+    if (skin == null) {
+      JavaPlugin.getPlugin(MMCore.class).getLogger().info("§7Downloading Skin with ID [" + id + "] from Mineskin.org");
+      skin = this.mineskinClient.getId(id).join();
+      skin.downloadTimestamp = System.currentTimeMillis();
+      this.skinMap.put(skin.id, skin);
+    } else if (skin.downloadTimestamp + unixWeek + ThreadLocalRandom.current().nextLong(-unixDay, unixDay) < System.currentTimeMillis()) {
+      JavaPlugin.getPlugin(MMCore.class).getLogger().info("Skin with ID [" + id + "] has old cache data. Downloading.");
+      skin = this.mineskinClient.getId(id).join();
+      skin.downloadTimestamp = System.currentTimeMillis();
+      this.skinMap.put(skin.id, skin);
+    }
+
+    JavaPlugin.getPlugin(MMCore.class).getLogger().info("Getting Skin with ID [" + id + "] from skin cache.");
+    skinConsumer.accept(skin);
+  }
+
+  public void uploadImage(final File imageFile, final String name, final Consumer<Skin> skinConsumer) {
     // final BufferedImage image = ImageIO.read(imageFile);
 
     // Preconditions.checkArgument(image.getWidth() == 64 && image.getHeight() == 64);
 
-    this.mineskinClient.generateUpload(imageFile, SkinOptions.create(name, Model.DEFAULT, Visibility.PRIVATE), skinCallback);
+    skinConsumer.accept(this.mineskinClient.generateUpload(imageFile, SkinOptions.create(name, Variant.AUTO, Visibility.PRIVATE)).join());
   }
 
-  public void uploadHeadImage(final File imageFile, final String name, final ConsumingCallback skinCallback) throws IOException {
-    final BufferedImage headImage = ImageIO.read(imageFile);
+  public void uploadHeadImage(final File imageFile, final String name, final Consumer<Skin> skinConsumer) {
+    final BufferedImage headImage;
+    try {
+      headImage = ImageIO.read(imageFile);
+    } catch (final IOException e) {
+      e.printStackTrace();
+      return;
+    }
     Preconditions.checkArgument(headImage.getWidth() == 8 && headImage.getHeight() == 8);
     final BufferedImage image = new BufferedImage(64, 64, BufferedImage.TYPE_INT_ARGB);
     final int[] xHeadOffsets = new int[]{8, 16, 0, 8, 16, 24};
@@ -127,19 +131,32 @@ public class PlayerSkinManager {
       }
     }
     final File uploadFile = new File(imageFile.getParent(), imageFile.getName().replace(".png", "") + "_scaled.png");
-    ImageIO.write(image, "png", uploadFile);
-    this.uploadImage(uploadFile, name, skinCallback);
+    try {
+      ImageIO.write(image, "png", uploadFile);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+    this.uploadImage(uploadFile, name, skinConsumer);
   }
 
-  public void uploadAndScaleHeadImage(final File imageFile, final String name, final ConsumingCallback skinCallback)
-      throws IOException {
-    final BufferedImage headImage = ImageIO.read(imageFile);
+  public void uploadAndScaleHeadImage(final File imageFile, final String name, final Consumer<Skin> skinConsumer) {
+    final BufferedImage headImage;
+    try {
+      headImage = ImageIO.read(imageFile);
+    } catch (final IOException e) {
+      e.printStackTrace();
+      return;
+    }
     final double widthScale = 8D / (double) headImage.getWidth();
     final double heightScale = 8D / (double) headImage.getWidth();
     final BufferedImage image = this.scale(headImage, widthScale, heightScale);
     final File uploadFile = new File(imageFile.getParent(), imageFile.getName().replace(".png", "") + "_8.png");
-    ImageIO.write(image, "png", uploadFile);
-    this.uploadHeadImage(uploadFile, name, skinCallback);
+    try {
+      ImageIO.write(image, "png", uploadFile);
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+    this.uploadHeadImage(uploadFile, name, skinConsumer);
   }
 
   private BufferedImage scale(final BufferedImage before, final double scaleWidth, final double scaleHeight) {
@@ -151,60 +168,6 @@ public class PlayerSkinManager {
     final AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
     after = scaleOp.filter(before, after);
     return after.getSubimage(0, 0, (int) (w * scaleWidth + 0.5D), ((int) (h * scaleHeight + 0.5D)));
-  }
-
-  public ConsumingCallback callback(final Consumer<Skin> skinConsumer) {
-    return new ConsumingCallback(this, skinConsumer);
-  }
-
-  public static class ConsumingCallback implements SkinCallback {
-
-    public ConsumingCallback(final PlayerSkinManager playerSkinManager, final Consumer<Skin> skinConsumer) {
-      this.playerSkinManager = playerSkinManager;
-      this.skinConsumer = skinConsumer;
-    }
-
-    public boolean locked = true;
-    private final PlayerSkinManager playerSkinManager;
-    private final Consumer<Skin> skinConsumer;
-
-    @Override
-    public void done(final Skin skin) {
-      Preconditions.checkArgument(skin != null);
-      if (this.playerSkinManager.downloadRequests.remove(skin.id)) {
-        skin.downloadTimestamp = System.currentTimeMillis();
-        this.playerSkinManager.skinMap.put(skin.id, skin);
-      }
-      this.skinConsumer.accept(skin);
-
-      this.locked = false;
-    }
-
-    @Override
-    public void uploading() {
-      JavaPlugin.getPlugin(MMCore.class).getLogger().info("SkinClient -> Uploading File...");
-      this.locked = true;
-    }
-
-    @Override
-    public void error(final String errorMessage) {
-      JavaPlugin.getPlugin(MMCore.class).getLogger().warning("SkinClient -> Error: " + errorMessage);
-      this.locked = false;
-    }
-
-    @Override
-    public void exception(final Exception exception) {
-      exception.printStackTrace();
-      this.locked = false;
-    }
-
-    @Override
-    public void waiting(final long delay) {
-      JavaPlugin.getPlugin(MMCore.class).getLogger()
-          .info("SkinClient -> Waiting §e" + ((int) (delay / 100.0) / 10.0) + "s §fon connection.");
-      this.locked = true;
-    }
-
   }
 
 }

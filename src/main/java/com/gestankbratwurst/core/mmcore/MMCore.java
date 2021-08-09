@@ -10,6 +10,8 @@ import com.gestankbratwurst.core.mmcore.data.config.MMCoreConfiguration;
 import com.gestankbratwurst.core.mmcore.data.model.DataManager;
 import com.gestankbratwurst.core.mmcore.data.mongodb.MongoIO;
 import com.gestankbratwurst.core.mmcore.protocol.holograms.impl.HologramManager;
+import com.gestankbratwurst.core.mmcore.resourcepack.ResourcepackModule;
+import com.gestankbratwurst.core.mmcore.resourcepack.SkinChooserCommand;
 import com.gestankbratwurst.core.mmcore.skinclient.PlayerSkinManager;
 import com.gestankbratwurst.core.mmcore.tablist.TabListManager;
 import com.gestankbratwurst.core.mmcore.tablist.implementation.EmptyTabList;
@@ -39,6 +41,8 @@ import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
 
 public final class MMCore extends JavaPlugin {
+
+  private static ResourcepackModule resourcepackModule;
 
   @Getter(AccessLevel.MODULE)
   private static MMCore instance;
@@ -93,14 +97,16 @@ public final class MMCore extends JavaPlugin {
     hologramManager = new HologramManager(this);
     tabListManager = new TabListManager(this, player -> new EmptyTabList());
     displayCompiler = new ItemDisplayCompiler(this);
-    playerSkinManager = new PlayerSkinManager();
+    playerSkinManager = PlayerSkinManager.load();
+    resourcepackModule = new ResourcepackModule();
+    resourcepackModule.enable(this);
     tokenActionManager = new TokenActionManager();
     // scoreboardManager = new ScoreboardAPI(this).getBoardManager();
 
     this.registerDefaultJacksonSerializer();
     this.initUtils();
 
-    TutorialStuff.enable();
+    // TutorialStuff.enable();
   }
 
   private void registerDefaultJacksonSerializer() {
@@ -120,11 +126,12 @@ public final class MMCore extends JavaPlugin {
     UtilItem.init(this);
     Bukkit.getPluginManager().registerEvents(new ChunkTracker(this), this);
     Bukkit.getPluginManager().registerEvents(new EntityTracker(this), this);
+    paperCommandManager.registerCommand(new SkinChooserCommand());
   }
 
   @Override
   public void onDisable() {
-    // Plugin shutdown logic
+    resourcepackModule.disable(this);
     dataManager.expireAllDomains();
   }
 }
