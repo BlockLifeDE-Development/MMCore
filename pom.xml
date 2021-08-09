@@ -47,7 +47,6 @@
             </goals>
             <configuration>
               <createDependencyReducedPom>false</createDependencyReducedPom>
-              <minimizeJar>true</minimizeJar>
             </configuration>
           </execution>
         </executions>
