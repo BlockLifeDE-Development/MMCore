@@ -21,6 +21,7 @@ public class DataManager {
 
   public static final String PLAYER_DOMAIN_KEY = "PlayerData";
   public static final String GLOBAL_DOMAIN_KEY = "GlobalData";
+  public static final String SERVER_DOMAIN_KEY = "ServerData";
   public static final BinarySwap<UUID> UUID_SWAP = BinarySwap.<UUID>builder()
       .keyToString(UUID::toString)
       .stringToKey(UUID::fromString)
@@ -45,6 +46,11 @@ public class DataManager {
 
   public void expireAllDomains() {
     this.agnosticDataDomainMap.values().forEach(AgnosticDataDomain::expire);
+  }
+
+  public AgnosticDataDomain<String> getServerDataDomain() {
+    final String serverName = MMCoreConfiguration.get().getServerName();
+    return this.getOrCreateDataDomain(SERVER_DOMAIN_KEY + "#" + serverName, DEFAULT_CACHE_TIME_MINUTES, STRING_SWAP);
   }
 
   public AgnosticDataDomain<String> getGlobalDataDomain() {

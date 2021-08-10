@@ -16,20 +16,22 @@ import lombok.Data;
 @AllArgsConstructor
 public class FontMeta {
 
+  private final int horizontalShift;
+  private final int verticalShift;
   private final int height;
   private final int ascent;
   private final String type;
 
   public static FontMeta of(final int height, final int ascent, final String type) {
-    return new FontMeta(height, ascent, type);
+    return new FontMeta(0, 0, height, ascent, type);
   }
 
   public static FontMeta of(final int height, final int ascent) {
-    return new FontMeta(height, ascent, "bitmap");
+    return new FontMeta(0, 0, height, ascent, "bitmap");
   }
 
   public static FontMeta common() {
-    return new FontMeta(9, 8, "bitmap");
+    return new FontMeta(0, 0, 9, 8, "bitmap");
   }
 
 }

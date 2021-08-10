@@ -305,6 +305,14 @@ public class ResourcepackAssembler {
         fontProvider.addProperty("height", fontMeta.getHeight());
         fontProvider.addProperty("ascent", fontMeta.getAscent());
         fontProvider.addProperty("type", fontMeta.getType());
+        final int horizShift = fontMeta.getHorizontalShift();
+        final int vertShift = fontMeta.getVerticalShift();
+        if (horizShift != 0 && vertShift != 0) {
+          final JsonArray shiftArray = new JsonArray();
+          shiftArray.add(vertShift);
+          shiftArray.add(horizShift);
+          fontProvider.add("shift", shiftArray);
+        }
         providerArray.add(fontProvider);
         fontIndex++;
 

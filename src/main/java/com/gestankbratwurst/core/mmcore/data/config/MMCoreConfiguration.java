@@ -23,6 +23,8 @@ public class MMCoreConfiguration {
     return MMCoreConfigManager.getConfiguration();
   }
 
+  @JsonProperty("ServerName")
+  private final String serverName = "Instanz_I";
   @JsonProperty("ServerType")
   private final ServerType serverType = ServerType.MASTER;
   @JsonProperty("RedisAddress")
