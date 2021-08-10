@@ -32,6 +32,7 @@ import com.gestankbratwurst.core.mmcore.util.json.commons.LocationDeserializer;
 import com.gestankbratwurst.core.mmcore.util.json.commons.LocationSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
@@ -129,9 +130,13 @@ public final class MMCore extends JavaPlugin {
     paperCommandManager.registerCommand(new SkinChooserCommand());
   }
 
+  @SneakyThrows
   @Override
   public void onDisable() {
     resourcepackModule.disable(this);
     dataManager.expireAllDomains();
+    redissonClient.shutdown();
+    Thread.sleep(6500);
   }
+
 }

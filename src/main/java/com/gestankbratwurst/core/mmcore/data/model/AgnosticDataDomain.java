@@ -58,6 +58,7 @@ public class AgnosticDataDomain<T> {
         .writeMode(WriteMode.WRITE_BEHIND);
 
     this.cacheExpireTimeMinutes = expireMinutes;
+    
     this.agnosticDataHolderMap = redissonClient.getMapCache(domainKey, options);
   }
 

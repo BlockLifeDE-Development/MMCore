@@ -21,7 +21,7 @@ public class Msg {
   @Setter
   private static String errorPrefix = "§9Error §f>> ";
   @Setter
-  private static String normalPrefix = "§9Hi §f>> ";
+  private static String normalPrefix = "§9BlockLife §f>> ";
   @Setter
   private static String errorMessagePrefix = "§c";
   @Setter
